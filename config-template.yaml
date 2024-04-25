@@ -3,4 +3,6 @@ port: 27017
 db: admin
 user: root
 password: 123
+minPoolSize: 3
+maxPoolSize: 100
 

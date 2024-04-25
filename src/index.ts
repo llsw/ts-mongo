@@ -10,6 +10,16 @@ const logD = Debug("[DEBUG]");
 // const logW = Debug("[WARN]");
 // const logE = Debug("[ERROR]");
 
+interface Config {
+    host: string
+    port: number
+    db: string
+    user: string
+    password: string
+    minPoolSize?: number
+    maxPoolSize?: number
+}
+
 // 定义集合接口
 interface ITemp {
     foo: string;
@@ -31,7 +41,8 @@ const Temp = model<ITemp>('temp', tempSchema, 'temp');
 run().catch(err => console.log(err));
 
 async function run() {
-    await connect(mongoUrlBuilder());
+    const cfg = getConfig()
+    await connect(mongoUrlBuilder(cfg), mongoOptsBuilder(cfg));
     // 查多条
     let bars  = await Temp.find({foo: "bar"}).lean().exec()
     logD(bars)
@@ -41,8 +52,6 @@ async function run() {
     logD(bars)
     bars  = await Temp.where({foo: "bar"}).limit(1).lean().exec()
     logD(bars)
-
-
 
     // 查一条
     const bar = await Temp.findOne({foo: "bar"}).lean().exec()
@@ -59,8 +68,19 @@ async function run() {
     // ...
 }
 
-function mongoUrlBuilder(filePath: string = "./config.yaml") {
+function getConfig(filePath: string = "./config.yaml"): Config {
     const file = fs.readFileSync(filePath, 'utf8');
     const cfg = YAML.parse(file);
+    return cfg
+}
+
+function mongoUrlBuilder(cfg: Config) {
     return `mongodb://${cfg.user}:${cfg.password}@${cfg.host}:${cfg.port}/${cfg.db}`
+}
+
+function mongoOptsBuilder(cfg: Config) {
+    return {
+        minPoolSize: cfg.minPoolSize ? cfg.minPoolSize : 1,
+        maxPoolSize: cfg.maxPoolSize ? cfg.maxPoolSize : 1
+    }
 }
