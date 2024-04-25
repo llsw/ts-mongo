@@ -33,8 +33,16 @@ run().catch(err => console.log(err));
 async function run() {
     await connect(mongoUrlBuilder());
     // 查多条
-    const bars  = await Temp.find({foo: "bar"}).lean().exec()
+    let bars  = await Temp.find({foo: "bar"}).lean().exec()
     logD(bars)
+
+    // limit
+    bars  = await Temp.find({foo: "bar"}).limit(1).lean().exec()
+    logD(bars)
+    bars  = await Temp.where({foo: "bar"}).limit(1).lean().exec()
+    logD(bars)
+
+
 
     // 查一条
     const bar = await Temp.findOne({foo: "bar"}).lean().exec()
