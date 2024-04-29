@@ -1,6 +1,6 @@
 import * as Debug from 'debug';
 
-import { Schema, model, connect } from 'mongoose';
+import mongoose, { Schema, model, connect } from 'mongoose';
 
 import * as fs from 'fs';
 import * as YAML from 'yaml';
@@ -22,11 +22,13 @@ interface Config {
 
 // 定义集合接口
 interface ITemp {
+    _id: string;
     foo: string;
 }
 
 // 定义集合字段
 const tempSchema = new Schema<ITemp>({
+    _id: { type: String, required: true },
     foo: { type: String, required: true },
 });
 
@@ -41,10 +43,22 @@ const Temp = model<ITemp>('temp', tempSchema, 'temp');
 run().catch(err => console.log(err));
 
 async function run() {
+
+    // let  id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId("24 character")
+
+
     const cfg = getConfig()
     await connect(mongoUrlBuilder(cfg), mongoOptsBuilder(cfg));
+
+        //   创建一条记录
+    const temp = new Temp({
+    _id: "10001",
+    foo: 'ikun',
+    });
+    await temp.save();
+
     // 查多条
-    let bars  = await Temp.find({foo: "bar"}).lean().exec()
+    let bars  = await Temp.find({_id: "10001"}).lean().exec()
     logD(bars)
 
     // limit
@@ -57,11 +71,7 @@ async function run() {
     const bar = await Temp.findOne({foo: "bar"}).lean().exec()
     logD(bar?.foo)
 
-    //   创建一条记录
-    //   const temp = new Temp({
-    //     foo: 'ikun',
-    //   });
-    //   await temp.save();
+
 
     // 更新
     // await Temp.findByIdAndUpdate
